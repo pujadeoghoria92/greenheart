@@ -314,6 +314,7 @@ body {
 
 <div class="main">
   <header class="topbar">
+    
     <div style="display:flex;align-items:center;gap:1rem;">
       <button class="hamburger-top" onclick="document.getElementById('sidebar').classList.toggle('open')">
         <span></span><span></span><span></span>
@@ -568,153 +569,206 @@ body {
 
 <div class="toast" id="toast"></div>
 <script type="module">
-  import { getMyScores, addScore, deleteScore, editScore } from './js/scores.js'
-  import { requireAuth } from './js/auth.js'
-
-  const user = await requireAuth()
-
-  // Load real scores from Supabase
-  async function loadScores() {
-    scores = await getMyScores()   // replaces the hardcoded scores array
-    renderScores()
-  }
-
-  // Replace the addScore button handler
-  document.getElementById('quickAddBtn').onclick = async () => {
-    const date  = document.getElementById('quickDate').value
-    const pts   = parseInt(document.getElementById('quickScore').value)
-    try {
-      await addScore(date, pts)
-      await loadScores()
-      showToast('✅ Score saved!')
-    } catch(err) {
-      showToast('⚠️ ' + err.message, true)
-    }
-  }
-
-  loadScores()
-  
-
-// DATE
-document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('scoreDate').value = new Date().toISOString().split('T')[0];
-
-// SCORES DATA
+  // ── DATA ──
 let scores = [
-  { id:1, date:'2026-04-18', val:34 },
-  { id:2, date:'2026-04-11', val:28 },
-  { id:3, date:'2026-04-06', val:31 },
-  { id:4, date:'2026-03-30', val:29 },
-  { id:5, date:'2026-03-22', val:36 },
-];
-let nextId = 6;
+  { date: '2026-04-18', pts: 34 },
+  { date: '2026-04-11', pts: 28 },
+  { date: '2026-04-06', pts: 31 },
+  { date: '2026-03-30', pts: 29 },
+  { date: '2026-03-22', pts: 36 },
+]
 
+// ── FORMAT DATE ──
+function formatDate(d) {
+  const dt = new Date(d + 'T00:00:00')
+  return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// ── RENDER SCORES ──
 function renderScores() {
-  const sorted = [...scores].sort((a,b) => new Date(b.date)-new Date(a.date));
-  const maxVal = Math.max(...scores.map(s=>s.val));
-  const list = document.getElementById('scoreList');
-  list.innerHTML = '';
-  sorted.forEach((s,i) => {
-    const isLatest = i===0;
-    const isBest = s.val===maxVal;
-    const dateStr = new Date(s.date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const row = document.createElement('div');
-    row.className = 'score-row';
-    row.innerHTML = `
-      <span class="score-rank">${i+1}</span>
-      <span class="score-date">${dateStr}</span>
-      ${isLatest?'<span class="score-sticker sticker-latest">Latest</span>':''}
-      ${isBest&&!isLatest?'<span class="score-sticker sticker-best">Best</span>':''}
-      <span class="score-val ${s.val>=32?'high':''}">${s.val}</span>
-      <div class="score-actions">
-        <button class="score-btn" onclick="editScore(${s.id})">Edit</button>
-        <button class="score-btn del" onclick="deleteScore(${s.id})">✕</button>
-      </div>`;
-    list.appendChild(row);
-  });
-  renderDrawBalls(sorted);
+  const list = document.getElementById('scoreList')
+  if (!list) return
+  const sorted = [...scores].sort((a, b) => new Date(b.date) - new Date(a.date))
+  list.innerHTML = sorted.map((s, i) => `
+    <div class="score-row ${i === 0 ? 'latest' : ''}">
+      <div class="score-rank">${i + 1}</div>
+      <div class="score-date">${formatDate(s.date)}</div>
+      ${i === 0 ? '<span class="score-label">Latest</span>' : ''}
+      <div class="score-pts">${s.pts}</div>
+      <button class="score-edit" onclick="editScore(${i})">✏️</button>
+      <button class="score-edit" onclick="deleteScore('${s.date}')">🗑️</button>
+    </div>
+  `).join('')
 }
 
-function renderDrawBalls(sorted) {
-  const balls = document.getElementById('drawBalls');
-  balls.innerHTML = '';
-  (sorted||[...scores].sort((a,b)=>new Date(b.date)-new Date(a.date))).forEach(s=>{
-    const b = document.createElement('div');
-    b.className='score-ball entered';
-    b.textContent=s.val;
-    balls.appendChild(b);
-  });
+// ── ADD SCORE ──
+function addScore() {
+  const dateVal  = document.getElementById('quickDate').value
+  const scoreVal = parseInt(document.getElementById('quickScore').value)
+
+  if (!dateVal) {
+    showToast('⚠️ Please select a date', true); return
+  }
+  if (isNaN(scoreVal) || scoreVal < 1 || scoreVal > 45) {
+    showToast('⚠️ Score must be between 1 and 45', true); return
+  }
+  if (scores.some(s => s.date === dateVal)) {
+    showToast('⚠️ A score already exists for this date', true); return
+  }
+
+  scores.push({ date: dateVal, pts: scoreVal })
+  scores.sort((a, b) => new Date(b.date) - new Date(a.date))
+  if (scores.length > 5) scores = scores.slice(0, 5)
+
+  renderScores()
+  document.getElementById('quickDate').value  = ''
+  document.getElementById('quickScore').value = ''
+  showToast('✅ Score added!')
 }
 
-function toggleScoreForm() {
-  document.getElementById('scoreForm').classList.toggle('open');
+// ── DELETE SCORE ──
+function deleteScore(date) {
+  if (!confirm('Delete this score?')) return
+  scores = scores.filter(s => s.date !== date)
+  renderScores()
+  showToast('Score removed')
 }
 
-function addscore() {
-  const date = document.getElementById('scoreDate').value;
-  const val = parseInt(document.getElementById('scoreVal').value);
-  if (!date) { showToast('Please select a date',true); return; }
-  if (!val||val<1||val>45) { showToast('Score must be 1–45',true); return; }
-  if (scores.find(s=>s.date===date)) { showToast('A score already exists for this date. Edit or delete it first.',true); return; }
-  scores.push({id:nextId++,date,val});
-  scores.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if (scores.length>5) scores=scores.slice(0,5);
-  document.getElementById('scoreVal').value='';
-  toggleScoreForm();
-  renderScores();
-  showToast('Score saved ✓');
+// ── EDIT SCORE ──
+let editingDate = null
+function editScore(idx) {
+  const sorted = [...scores].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const s = sorted[idx]
+  document.getElementById('modalDate').value  = s.date
+  document.getElementById('modalScore').value = s.pts
+  openModal(true, s.date)
 }
 
-function deletescore(id) {
-  scores = scores.filter(s=>s.id!==id);
-  renderScores();
-  showToast('Score deleted');
+// ── MODAL ──
+function openModal(isEdit, origDate) {
+  editingDate = origDate || null
+  if (!isEdit) {
+    document.getElementById('modalDate').value  = ''
+    document.getElementById('modalScore').value = ''
+  }
+  document.getElementById('modalOverlay').classList.add('open')
 }
 
-function editScore(id) {
-  const s = scores.find(s=>s.id===id);
-  if (!s) return;
-  const newVal = prompt(`Edit score for ${s.date} (current: ${s.val})\nEnter new value (1–45):`);
-  if (newVal===null) return;
-  const p = parseInt(newVal);
-  if (isNaN(p)||p<1||p>45) { showToast('Invalid. Must be 1–45.',true); return; }
-  s.val=p;
-  renderScores();
-  showToast('Score updated ✓');
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open')
+  document.getElementById('modalError').style.display = 'none'
+  editingDate = null
 }
 
-function updatePct(val) {
-  document.getElementById('pctLabel').textContent = val+'%';
-  document.getElementById('pctFill').style.width = val+'%';
-  const monthly = ((89/12)*(val/100)).toFixed(2);
-  document.getElementById('charityAmt').textContent = '£'+monthly;
+function saveFromModal() {
+  const date  = document.getElementById('modalDate').value
+  const pts   = parseInt(document.getElementById('modalScore').value)
+  const errEl = document.getElementById('modalError')
+
+  if (!date || isNaN(pts) || pts < 1 || pts > 45) {
+    errEl.style.display = 'block'; return
+  }
+  errEl.style.display = 'none'
+
+  if (editingDate) scores = scores.filter(s => s.date !== editingDate)
+
+  if (scores.some(s => s.date === date)) {
+    errEl.textContent    = '⚠️ A score already exists for this date.'
+    errEl.style.display  = 'block'; return
+  }
+
+  scores.push({ date, pts })
+  scores.sort((a, b) => new Date(b.date) - new Date(a.date))
+  if (scores.length > 5) scores = scores.slice(0, 5)
+
+  renderScores()
+  closeModal()
+  showToast('✅ Score saved!')
 }
 
-// COUNTDOWN to end of month
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal()
+})
+
+// ── CHARITY SLIDER ──
+function updateCharity(val) {
+  const pct   = parseInt(val)
+  const sub   = 9.99
+  const ch    = (sub * pct / 100).toFixed(2)
+  const prize = (sub * 0.392).toFixed(2)
+  const plat  = Math.max(0, sub - parseFloat(ch) - parseFloat(prize)).toFixed(2)
+  document.getElementById('sliderVal').textContent        = pct + '%'
+  document.getElementById('charityPctDisplay').textContent = pct + '%'
+  document.getElementById('cbCharity').textContent        = '£' + ch
+  document.getElementById('cbPrize').textContent          = '£' + prize
+  document.getElementById('cbPlatform').textContent       = '£' + plat
+}
+
+// ── COUNTDOWN ──
 function updateCountdown() {
-  const now = new Date();
-  const end = new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59);
-  let diff = Math.max(0,end-now);
-  const d=Math.floor(diff/86400000); diff%=86400000;
-  const h=Math.floor(diff/3600000); diff%=3600000;
-  const m=Math.floor(diff/60000); diff%=60000;
-  const s=Math.floor(diff/1000);
-  document.getElementById('days').textContent=String(d).padStart(2,'0');
-  document.getElementById('hours').textContent=String(h).padStart(2,'0');
-  document.getElementById('mins').textContent=String(m).padStart(2,'0');
-  document.getElementById('secs').textContent=String(s).padStart(2,'0');
+  const target = new Date('2026-04-30T23:59:59')
+  const now    = new Date()
+  const diff   = target - now
+  if (diff <= 0) {
+    document.getElementById('countdown').innerHTML =
+      '<span style="color:var(--gold-light);font-size:.9rem;">Draw closed</span>'
+    return
+  }
+  const d = Math.floor(diff / 86400000)
+  const h = Math.floor((diff % 86400000) / 3600000)
+  const m = Math.floor((diff % 3600000) / 60000)
+  const s = Math.floor((diff % 60000) / 1000)
+  const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = String(v).padStart(2,'0') }
+  el('cd-d', d); el('cd-h', h); el('cd-m', m); el('cd-s', s)
 }
-setInterval(updateCountdown,1000);
-updateCountdown();
+setInterval(updateCountdown, 1000)
+updateCountdown()
 
-function showToast(msg,error=false) {
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.className='toast'+(error?' error':'')+' show';
-  setTimeout(()=>t.classList.remove('show'),3000);
+// ── TOAST ──
+function showToast(msg, isError) {
+  const t = document.getElementById('toast')
+  if (!t) return
+  t.textContent    = msg
+  t.style.background = isError ? '#c0392b' : 'var(--green)'
+  t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2800)
 }
 
-renderScores();
+// ── NOTIFICATION BELL ──
+function toggleNotif() {
+  const d = document.getElementById('notifDropdown')
+  if (!d) return
+  d.style.display = d.style.display === 'block' ? 'none' : 'block'
+}
+
+function clearNotifs() {
+  const dot  = document.getElementById('notifDot')
+  const drop = document.getElementById('notifDropdown')
+  if (dot)  dot.style.display  = 'none'
+  if (drop) drop.style.display = 'none'
+  document.querySelectorAll('#notifList > div')
+    .forEach(i => i.style.background = 'none')
+  showToast('All notifications marked as read')
+}
+
+document.addEventListener('click', function(e) {
+  const btn  = document.getElementById('notifBtn')
+  const drop = document.getElementById('notifDropdown')
+  if (drop && btn && !btn.contains(e.target) && !drop.contains(e.target)) {
+    drop.style.display = 'none'
+  }
+})
+
+// ── SET DEFAULT DATE ──
+const today = new Date().toISOString().split('T')[0]
+const qd = document.getElementById('quickDate')
+const md = document.getElementById('modalDate')
+if (qd) qd.value = today
+if (md) md.value = today
+
+// ── INIT ──
+renderScores()
 </script>
 </body>
 </html>
