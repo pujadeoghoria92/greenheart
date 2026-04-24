@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GreenHeart — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#181c26;--surface2:#1e2330;--border:rgba(255,255,255,0.07);
+  --green:#2d7a4a;--green-light:#7dbf8e;--gold:#c8a84b;--gold-light:#e8d08a;
+  --red:#e74c3c;--red-soft:rgba(231,76,60,0.12);
+  --blue:#3b82f6;--blue-soft:rgba(59,130,246,0.1);
+  --white:#f5f2ec;--muted:rgba(245,242,236,0.4);--muted2:rgba(245,242,236,0.65);
+  --sidebar:220px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden}
+body{display:flex}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s}
+.sb-logo{padding:1.6rem 1.4rem 1rem;border-bottom:1px solid var(--border)}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white)}
+.sb-logo-text span{color:var(--gold)}
+.sb-logo-badge{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);background:var(--red-soft);padding:2px 8px;border-radius:1rem;margin-top:.4rem;display:inline-block}
+.sb-nav{flex:1;padding:.8rem 0;overflow-y:auto}
+.sb-label{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2);padding:.6rem 1.4rem .2rem}
+.sb-item{display:flex;align-items:center;gap:.7rem;padding:.6rem 1.4rem;font-size:.85rem;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%;text-align:left;transition:background .15s,color .15s;text-decoration:none}
+.sb-item:hover{background:rgba(255,255,255,.04);color:var(--white)}
+.sb-item.active{background:rgba(45,122,74,.15);color:var(--green-light);border-right:2px solid var(--green)}
+.sb-item .icon{font-size:.95rem;width:18px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:1rem}
+.sb-bottom{border-top:1px solid var(--border);padding:.8rem 0}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:rgba(15,17,23,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.8rem;position:sticky;top:0;z-index:40}
+.topbar-left{display:flex;align-items:center;gap:.8rem}
+.topbar-title{font-size:.95rem;font-weight:500}
+.admin-chip{font-size:.7rem;background:var(--red-soft);color:var(--red);padding:2px 9px;border-radius:1rem;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:.8rem}
+.tb-avatar{width:32px;height:32px;border-radius:50%;background:rgba(200,168,75,.2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--gold)}
+.mob-btn{display:none;background:none;border:none;color:var(--white);font-size:1.2rem;cursor:pointer}
+
+/* TABS (page sections) */
+.page{display:none;padding:1.6rem}.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden}
+.card-hd{padding:1.1rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-hd-title{font-size:.88rem;font-weight:500;color:var(--white)}
+.card-bd{padding:1.2rem 1.4rem}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.4rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:.9rem;padding:1.1rem 1.3rem;transition:border-color .2s}
+.stat:hover{border-color:rgba(45,122,74,.4)}
+.stat-label{font-size:.7rem;color:var(--muted);margin-bottom:.35rem}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--white);line-height:1}
+.stat-sub{font-size:.72rem;margin-top:.25rem}
+.stat-sub.g{color:var(--green-light)}.stat-sub.gold{color:var(--gold)}.stat-sub.r{color:var(--red)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{padding:.6rem 1rem;text-align:left;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500}
+td{padding:.75rem 1rem;border-bottom:1px solid var(--border);color:var(--muted2);vertical-align:middle}
+tr:last-child td{border:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:1rem}
+.badge-active{background:rgba(45,122,74,.15);color:var(--green-light)}
+.badge-inactive{background:rgba(255,255,255,.06);color:var(--muted)}
+.badge-pending{background:rgba(200,168,75,.15);color:var(--gold)}
+.badge-paid{background:rgba(45,122,74,.15);color:var(--green-light)}
+.badge-verify{background:var(--red-soft);color:var(--red)}
+.badge-monthly{background:var(--blue-soft);color:var(--blue)}
+.badge-yearly{background:rgba(200,168,75,.12);color:var(--gold)}
+.tbl-action{background:none;border:1px solid var(--border);border-radius:.4rem;padding:3px 9px;font-size:.72rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-right:3px}
+.tbl-action:hover{border-color:var(--green);color:var(--green-light)}
+.tbl-action.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* SEARCH BAR */
+.search-bar{display:flex;gap:.7rem;align-items:center;margin-bottom:1.1rem;flex-wrap:wrap}
+.search-input{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:.6rem;padding:.5rem .9rem;font-size:.83rem;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--green)}
+.search-input::placeholder{color:var(--muted)}
+.filter-select{background:var(--surface2);border:1px solid var(--border);border-radius:.6rem;padding:.5rem .8rem;font-size:.8rem;color:var(--muted2);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+.btn-sm{padding:.45rem 1rem;border-radius:.6rem;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;border:none;transition:background .2s}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#3a9a5c}
+.btn-gold{background:var(--gold);color:#0d0d0d}.btn-gold:hover{background:var(--gold-light)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#c0392b}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--muted2)}.btn-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.2)}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+
+/* DRAW ENGINE */
+.draw-engine{background:linear-gradient(135deg,var(--green) 0%,#1a4a2e 100%);border:none;border-radius:1.2rem;padding:1.8rem;margin-bottom:1.2rem}
+.de-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:#fff;margin-bottom:.3rem}
+.de-sub{font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:1.4rem}
+.de-controls{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.4rem}
+.de-toggle{display:flex;background:rgba(0,0,0,.2);border-radius:.6rem;padding:3px}
+.de-toggle button{padding:.4rem .9rem;border:none;border-radius:.5rem;font-size:.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;background:none;color:rgba(255,255,255,.5);transition:all .2s}
+.de-toggle button.on{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.de-numbers{display:flex;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.de-num{width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.2rem;color:rgba(255,255,255,.4);transition:all .5s}
+.de-num.drawn{border-color:var(--gold);color:var(--gold-light);background:rgba(200,168,75,.15);transform:scale(1.1)}
+.de-actions{display:flex;gap:.8rem;flex-wrap:wrap}
+
+/* CHARITY FORM */
+.charity-form{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-group{display:flex;flex-direction:column;gap:.3rem}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:.7rem;color:var(--muted);font-weight:500}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:.5rem;padding:.55rem .85rem;font-size:.83rem;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--green)}
+textarea.form-input{resize:vertical;min-height:80px}
+
+/* ANALYTICS */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.chart-placeholder{background:var(--surface2);border-radius:.8rem;padding:1.2rem;min-height:160px;display:flex;flex-direction:column;justify-content:flex-end;gap:.4rem}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:100px}
+.bar{flex:1;background:var(--green);border-radius:3px 3px 0 0;opacity:.7;transition:opacity .2s;cursor:pointer;min-height:8px}
+.bar:hover{opacity:1}
+.bar.gold{background:var(--gold)}
+.chart-labels{display:flex;gap:6px;margin-top:.4rem}
+.chart-label{flex:1;font-size:.6rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* WINNER VERIFY */
+.verify-card{border:1px solid var(--border);border-radius:.9rem;padding:1.1rem 1.3rem;background:var(--surface2);margin-bottom:.7rem;display:flex;align-items:center;gap:1rem}
+.vc-avatar{width:38px;height:38px;border-radius:50%;background:rgba(200,168,75,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--gold);flex-shrink:0}
+.vc-info{flex:1}
+.vc-name{font-size:.88rem;font-weight:500;color:var(--white)}
+.vc-sub{font-size:.73rem;color:var(--muted);margin-top:2px}
+.vc-amt{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--gold);margin-right:.5rem}
+.vc-actions{display:flex;gap:.5rem}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:1.1rem;padding:1.8rem;width:100%;max-width:420px;margin:1rem;animation:fadeUp .25s ease}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:.25rem}
+.modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.3rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.8rem;right:1.8rem;z-index:300;background:var(--green);color:#fff;padding:.75rem 1.3rem;border-radius:.75rem;font-size:.85rem;font-weight:500;transform:translateY(60px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes numPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1.1)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}.mob-btn{display:block}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3,.analytics-grid,.charity-form{grid-template-columns:1fr}
+  .form-group.full{grid-column:auto}
+}
+@media(max-width:500px){.stat-row{grid-template-columns:1fr}.page{padding:1rem}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text"><span>Green</span>Heart</div>
+    <div class="sb-logo-badge">Admin Panel</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">Overview</div>
+    <button class="sb-item active" onclick="showPage('overview',this)"><span class="icon">📊</span>Dashboard</button>
+    <div class="sb-label">Management</div>
+    <button class="sb-item" onclick="showPage('users',this)"><span class="icon">👥</span>Users<span class="sb-badge">3</span></button>
+    <button class="sb-item" onclick="showPage('draw',this)"><span class="icon">🎯</span>Draw Engine</button>
+    <button class="sb-item" onclick="showPage('charities',this)"><span class="icon">💚</span>Charities</button>
+    <button class="sb-item" onclick="showPage('winners',this)"><span class="icon">🏆</span>Winners<span class="sb-badge">2</span></button>
+    <div class="sb-label">Insights</div>
+    <button class="sb-item" onclick="showPage('analytics',this)"><span class="icon">📈</span>Analytics</button>
+    <div class="sb-label">System</div>
+    <a class="sb-item" href="dashboard.html"><span class="icon">👤</span>User view</a>
+    <a class="sb-item" href="index.html"><span class="icon">🏠</span>Public site</a>
+  </nav>
+  <div class="sb-bottom">
+    <button class="sb-item" onclick="alert('Logged out')"><span class="icon">🚪</span>Log out</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mob-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="topbar-title">Admin Panel</div>
+      <div class="admin-chip">Super Admin</div>
+    </div>
+    <div class="topbar-right">
+      <div style="font-size:.78rem;color:var(--muted)">April 2026 draw active</div>
+      <div class="tb-avatar">SA</div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: OVERVIEW ══ -->
+  <div class="page active" id="page-overview">
+    <div class="stat-row">
+      <div class="stat"><div class="stat-label">Total users</div><div class="stat-val">3,241</div><div class="stat-sub g">↑ 184 this month</div></div>
+      <div class="stat"><div class="stat-label">Active subscribers</div><div class="stat-val">2,890</div><div class="stat-sub g">89.2% retention</div></div>
+      <div class="stat"><div class="stat-label">Prize pool (Apr)</div><div class="stat-val">£14,200</div><div class="stat-sub gold">Draw in 6 days</div></div>
+      <div class="stat"><div class="stat-label">Charity total</div><div class="stat-val">£12,400</div><div class="stat-sub g">48 charities</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Recent signups</div><button class="btn-sm btn-ghost" onclick="showPage('users',document.querySelector('.sb-item:nth-child(5)'))">View all</button></div>
+        <div class="card-bd" style="padding:0">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Name</th><th>Plan</th><th>Joined</th><th>Status</th></tr></thead>
+            <tbody id="recentUsers"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Draw status — April 2026</div></div>
+        <div class="card-bd">
+          <div style="margin-bottom:1rem">
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:.3rem">Jackpot pool</div>
+            <div style="font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--gold);font-weight:700">£8,400</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">5-match tier · 40% of total pool</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--muted)">Entries received</span><span style="color:var(--white);font-weight:500">2,890</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--muted)">Draw logic</span><span style="color:var(--white);font-weight:500">Random (lottery)</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--muted)">Results publish</span><span style="color:var(--white);font-weight:500">Apr 30, 2026</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--muted)">Jackpot rollover</span><span style="color:var(--green-light);font-weight:500">Active (no 5-match last month)</span></div>
+          </div>
+          <button class="btn-sm btn-green" style="margin-top:1.1rem;width:100%" onclick="showPage('draw',document.querySelector('.sb-item:nth-child(7)'))">Open draw engine →</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-hd-title">Winners pending verification</div><span class="badge badge-verify">2 awaiting</span></div>
+      <div class="card-bd" id="overviewWinners"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: USERS ══ -->
+  <div class="page" id="page-users">
+    <div class="search-bar">
+      <input class="search-input" id="userSearch" placeholder="Search by name or email…" oninput="filterUsers()" />
+      <select class="filter-select" id="userFilter" onchange="filterUsers()">
+        <option value="all">All plans</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button class="btn-sm btn-green" onclick="openUserModal()">+ Add user</button>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-hd-title">All Users</div><span id="userCount" style="font-size:.75rem;color:var(--muted)"></span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Charity %</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="userTableBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DRAW ENGINE ══ -->
+  <div class="page" id="page-draw">
+    <div class="draw-engine">
+      <div class="de-title">Monthly Draw Engine</div>
+      <div class="de-sub">Configure, simulate, and publish the April 2026 draw</div>
+      <div class="de-controls">
+        <div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:.4rem">Draw logic</div>
+          <div class="de-toggle">
+            <button class="on" id="toggleRandom" onclick="setDrawMode('random')">🎲 Random</button>
+            <button id="toggleAlgo" onclick="setDrawMode('algo')">⚙️ Algorithmic</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <div style="font-size:.7rem;color:rgba(255,255,255,.4)">Draw month</div>
+          <select class="filter-select" style="background:rgba(0,0,0,.2);color:#fff;border-color:rgba(255,255,255,.15)">
+            <option>April 2026</option><option>May 2026</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:.5rem">Drawn numbers</div>
+      <div class="de-numbers" id="drawnNumbers">
+        <div class="de-num" id="dn0">?</div>
+        <div class="de-num" id="dn1">?</div>
+        <div class="de-num" id="dn2">?</div>
+        <div class="de-num" id="dn3">?</div>
+        <div class="de-num" id="dn4">?</div>
+      </div>
+      <div class="de-actions">
+        <button class="btn-sm btn-gold" onclick="runSimulation()">▶ Run simulation</button>
+        <button class="btn-sm btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.15)" onclick="resetDraw()">↺ Reset</button>
+        <button class="btn-sm btn-green" id="publishBtn" disabled onclick="publishDraw()" style="opacity:.4">📢 Publish results</button>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Prize pool breakdown</div></div>
+        <div class="card-bd">
+          <div style="display:flex;flex-direction:column;gap:.7rem">
+            <div style="display:flex;align-items:center;gap:.9rem;padding:.8rem;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:.7rem">
+              <div>🏆</div>
+              <div style="flex:1"><div style="font-size:.85rem;color:var(--white)">5-Match Jackpot</div><div style="font-size:.72rem;color:var(--muted)">Rolls over if unclaimed</div></div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--gold);font-weight:700">£5,680</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.9rem;padding:.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:.7rem">
+              <div>🥈</div>
+              <div style="flex:1"><div style="font-size:.85rem;color:var(--white)">4-Match (35%)</div><div style="font-size:.72rem;color:var(--muted)">Split among winners</div></div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white);font-weight:700">£4,970</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.9rem;padding:.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:.7rem">
+              <div>🥉</div>
+              <div style="flex:1"><div style="font-size:.85rem;color:var(--white)">3-Match (25%)</div><div style="font-size:.72rem;color:var(--muted)">Split among winners</div></div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white);font-weight:700">£3,550</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Simulation log</div><button class="btn-sm btn-ghost" onclick="document.getElementById('simLog').innerHTML=''">Clear</button></div>
+        <div class="card-bd">
+          <div id="simLog" style="font-size:.78rem;color:var(--muted);line-height:1.8;min-height:80px;font-family:monospace"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: CHARITIES ══ -->
+  <div class="page" id="page-charities">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.7rem">
+      <input class="search-input" style="max-width:300px" placeholder="Search charities…" />
+      <button class="btn-sm btn-green" onclick="openCharityModal()">+ Add charity</button>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-hd-title">Charity Directory</div><span style="font-size:.75rem;color:var(--muted)">48 listed</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Name</th><th>Category</th><th>Supporters</th><th>Total donated</th><th>Featured</th><th>Actions</th></tr></thead>
+        <tbody id="charityTableBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: WINNERS ══ -->
+  <div class="page" id="page-winners">
+    <div class="card" style="margin-bottom:1.2rem">
+      <div class="card-hd"><div class="card-hd-title">Pending Verification</div><span class="badge badge-verify">2 awaiting</span></div>
+      <div class="card-bd" id="pendingWinners"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-hd-title">All Winners</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Winner</th><th>Draw</th><th>Match</th><th>Amount</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="winnersTableBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: ANALYTICS ══ -->
+  <div class="page" id="page-analytics">
+    <div class="stat-row">
+      <div class="stat"><div class="stat-label">MRR</div><div class="stat-val">£28,400</div><div class="stat-sub g">↑ 12% MoM</div></div>
+      <div class="stat"><div class="stat-label">ARR</div><div class="stat-val">£341k</div><div class="stat-sub g">On track</div></div>
+      <div class="stat"><div class="stat-label">Churn rate</div><div class="stat-val">2.1%</div><div class="stat-sub g">↓ 0.4% MoM</div></div>
+      <div class="stat"><div class="stat-label">Avg charity %</div><div class="stat-val">13.4%</div><div class="stat-sub gold">Above 10% min</div></div>
+    </div>
+    <div class="analytics-grid">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">New subscribers (6mo)</div></div>
+        <div class="card-bd">
+          <div class="chart-placeholder">
+            <div class="chart-bars" id="subChart"></div>
+            <div class="chart-labels" id="subLabels"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Charity contributions (6mo)</div></div>
+        <div class="card-bd">
+          <div class="chart-placeholder">
+            <div class="chart-bars" id="charityChart"></div>
+            <div class="chart-labels" id="charityLabels"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><div class="card-hd"><div class="card-hd-title">Top charities by donation</div></div>
+        <div class="card-bd" id="topCharities"></div></div>
+      <div class="card"><div class="card-hd"><div class="card-hd-title">Plan split</div></div>
+        <div class="card-bd">
+          <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:.3rem">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="color:var(--muted)">Yearly</span><span style="color:var(--gold)">68%</span></div>
+              <div style="height:6px;background:var(--surface2);border-radius:3px"><div style="width:68%;height:100%;background:var(--gold);border-radius:3px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="color:var(--muted)">Monthly</span><span style="color:var(--blue)">32%</span></div>
+              <div style="height:6px;background:var(--surface2);border-radius:3px"><div style="width:32%;height:100%;background:var(--blue);border-radius:3px"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;font-size:.78rem;color:var(--muted)">Yearly plans generate 2.1× more revenue per user</div>
+        </div>
+      </div>
+      <div class="card"><div class="card-hd"><div class="card-hd-title">Draw match history</div></div>
+        <div class="card-bd" id="matchHistory"></div></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-title">Edit User</div>
+    <div class="modal-sub">Update subscription, scores, or account details</div>
+    <div style="display:flex;flex-direction:column;gap:.9rem">
+      <div class="form-group"><label class="form-label">Full name</label><input class="form-input" id="editName" /></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="editEmail" type="email" /></div>
+      <div class="form-group"><label class="form-label">Plan</label>
+        <select class="form-input" id="editPlan"><option>monthly</option><option>yearly</option><option>inactive</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Charity contribution %</label><input class="form-input" id="editCharity" type="number" min="10" max="50" /></div>
+    </div>
+    <div style="display:flex;gap:.7rem;margin-top:1.1rem">
+      <button class="btn-sm btn-ghost" style="flex:1" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn-sm btn-green" style="flex:2" onclick="saveUser()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHARITY MODAL -->
+<div class="modal-overlay" id="charityModal">
+  <div class="modal">
+    <div class="modal-title">Add Charity</div>
+    <div class="modal-sub">Add a new charity to the directory</div>
+    <div class="charity-form">
+      <div class="form-group full"><label class="form-label">Charity name</label><input class="form-input" placeholder="e.g. GreenLinks Foundation" /></div>
+      <div class="form-group"><label class="form-label">Category</label><input class="form-input" placeholder="Environmental" /></div>
+      <div class="form-group"><label class="form-label">Registration number</label><input class="form-input" placeholder="Optional" /></div>
+      <div class="form-group full"><label class="form-label">Description</label><textarea class="form-input" placeholder="What does this charity do?"></textarea></div>
+      <div class="form-group"><label class="form-label">Featured?</label>
+        <select class="form-input"><option>No</option><option>Yes</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:.7rem;margin-top:1.1rem">
+      <button class="btn-sm btn-ghost" style="flex:1" onclick="closeModal('charityModal')">Cancel</button>
+      <button class="btn-sm btn-green" style="flex:2" onclick="showToast('Charity added ✅');closeModal('charityModal')">Add charity</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+const users = [
+  {name:'James Duncan',email:'james@example.com',plan:'yearly',charity:14,status:'active',joined:'Jan 2026'},
+  {name:'Sarah Mitchell',email:'sarah@example.com',plan:'monthly',charity:10,status:'active',joined:'Feb 2026'},
+  {name:'Tom Clarke',email:'tom@example.com',plan:'yearly',charity:20,status:'active',joined:'Mar 2026'},
+  {name:'Lisa Park',email:'lisa@example.com',plan:'monthly',charity:12,status:'inactive',joined:'Dec 2025'},
+  {name:'Daniel Wu',email:'daniel@example.com',plan:'yearly',charity:15,status:'active',joined:'Jan 2026'},
+  {name:'Emma Stone',email:'emma@example.com',plan:'monthly',charity:10,status:'active',joined:'Apr 2026'},
+];
+const charities = [
+  {name:'GreenLinks Foundation',cat:'Environmental',supporters:312,donated:'£4,200',featured:true},
+  {name:'Cancer Research UK Golf',cat:'Medical',supporters:198,donated:'£2,940',featured:false},
+  {name:'Junior Golf Trust',cat:'Youth',supporters:156,donated:'£1,880',featured:false},
+  {name:'Mind & Sport Alliance',cat:'Mental Health',supporters:89,donated:'£1,020',featured:false},
+];
+const winners = [
+  {name:'James Duncan',draw:'Mar 2026',match:'4-match',amount:'£240',submitted:'Mar 28',status:'paid'},
+  {name:'Sarah Mitchell',draw:'Apr 2026',match:'4-match',amount:'£340',submitted:'Apr 20',status:'verify'},
+  {name:'Tom Clarke',draw:'Apr 2026',match:'3-match',amount:'£120',submitted:'Apr 21',status:'pending'},
+  {name:'Lisa Park',draw:'Jan 2026',match:'3-match',amount:'£100',submitted:'Jan 31',status:'paid'},
+];
+
+// ── PAGE NAV ──
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── RENDER USERS ──
+let editIdx = null;
+function renderUsers(data) {
+  const body = document.getElementById('userTableBody');
+  document.getElementById('userCount').textContent = data.length + ' users';
+  body.innerHTML = data.map((u,i) => `
+    <tr>
+      <td><strong style="color:var(--white)">${u.name}</strong></td>
+      <td style="color:var(--muted)">${u.email}</td>
+      <td><span class="badge badge-${u.plan}">${u.plan}</span></td>
+      <td>${u.charity}%</td>
+      <td><span class="badge badge-${u.status}">${u.status}</span></td>
+      <td>${u.joined}</td>
+      <td>
+        <button class="tbl-action" onclick="openUserModal(${i})">Edit</button>
+        <button class="tbl-action danger" onclick="deleteUser(${i})">Remove</button>
+      </td>
+    </tr>`).join('');
+}
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const f = document.getElementById('userFilter').value;
+  const filtered = users.filter(u => {
+    const matchQ = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+    const matchF = f==='all' || u.plan===f || u.status===f;
+    return matchQ && matchF;
+  });
+  renderUsers(filtered);
+}
+function openUserModal(idx) {
+  editIdx = idx ?? null;
+  if (idx !== undefined && idx !== null) {
+    const u = users[idx];
+    document.getElementById('editName').value = u.name;
+    document.getElementById('editEmail').value = u.email;
+    document.getElementById('editPlan').value = u.plan;
+    document.getElementById('editCharity').value = u.charity;
+  }
+  document.getElementById('userModal').classList.add('open');
+}
+function saveUser() {
+  if (editIdx !== null) {
+    users[editIdx].name = document.getElementById('editName').value;
+    users[editIdx].plan = document.getElementById('editPlan').value;
+    users[editIdx].charity = document.getElementById('editCharity').value;
+    renderUsers(users);
+    showToast('User updated ✅');
+  }
+  closeModal('userModal');
+}
+function deleteUser(idx) {
+  if(!confirm('Remove this user?')) return;
+  users.splice(idx,1);
+  renderUsers(users);
+  showToast('User removed');
+}
+
+// ── RENDER CHARITIES ──
+function renderCharities() {
+  document.getElementById('charityTableBody').innerHTML = charities.map((c,i) => `
+    <tr>
+      <td><strong style="color:var(--white)">${c.name}</strong></td>
+      <td>${c.cat}</td>
+      <td>${c.supporters}</td>
+      <td style="color:var(--green-light)">${c.donated}</td>
+      <td><span class="badge ${c.featured?'badge-active':'badge-inactive'}">${c.featured?'Yes':'No'}</span></td>
+      <td>
+        <button class="tbl-action" onclick="showToast('Edit charity — connect to Supabase')">Edit</button>
+        <button class="tbl-action danger" onclick="showToast('Deleted (demo only)')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+function openCharityModal() { document.getElementById('charityModal').classList.add('open'); }
+
+// ── RENDER WINNERS ──
+function renderWinners() {
+  const pending = winners.filter(w => w.status === 'verify' || w.status === 'pending');
+  const renderVerify = (arr, containerId) => {
+    document.getElementById(containerId).innerHTML = arr.length ? arr.map(w => `
+      <div class="verify-card">
+        <div class="vc-avatar">${w.name.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="vc-info">
+          <div class="vc-name">${w.name}</div>
+          <div class="vc-sub">${w.match} · ${w.draw} · Submitted ${w.submitted}</div>
+        </div>
+        <div class="vc-amt">${w.amount}</div>
+        <div class="vc-actions">
+          <button class="btn-sm btn-green" onclick="verifyWinner('${w.name}','approved')">✓ Approve</button>
+          <button class="btn-sm btn-red" onclick="verifyWinner('${w.name}','rejected')">✗ Reject</button>
+        </div>
+      </div>`).join('') : '<div style="font-size:.82rem;color:var(--muted)">No pending verifications 🎉</div>';
+  };
+  renderVerify(pending, 'pendingWinners');
+  if(document.getElementById('overviewWinners')) renderVerify(pending, 'overviewWinners');
+  document.getElementById('winnersTableBody').innerHTML = winners.map(w => `
+    <tr>
+      <td><strong style="color:var(--white)">${w.name}</strong></td>
+      <td>${w.draw}</td>
+      <td>${w.match}</td>
+      <td style="color:var(--gold)">${w.amount}</td>
+      <td>${w.submitted}</td>
+      <td><span class="badge badge-${w.status}">${w.status}</span></td>
+      <td><button class="tbl-action" onclick="showToast('Payout marked complete')">Mark paid</button></td>
+    </tr>`).join('');
+}
+function verifyWinner(name, action) {
+  showToast(action === 'approved' ? `✅ ${name} approved — payout queued` : `❌ ${name} submission rejected`);
+  renderWinners();
+}
+
+// ── RECENT USERS (overview) ──
+function renderRecentUsers() {
+  document.getElementById('recentUsers').innerHTML = users.slice(0,4).map(u => `
+    <tr>
+      <td><strong style="color:var(--white)">${u.name}</strong></td>
+      <td><span class="badge badge-${u.plan}">${u.plan}</span></td>
+      <td style="color:var(--muted)">${u.joined}</td>
+      <td><span class="badge badge-${u.status}">${u.status}</span></td>
+    </tr>`).join('');
+}
+
+// ── DRAW ENGINE ──
+let drawMode = 'random';
+let drawn = [];
+let simRan = false;
+function setDrawMode(mode) {
+  drawMode = mode;
+  document.getElementById('toggleRandom').classList.toggle('on', mode==='random');
+  document.getElementById('toggleAlgo').classList.toggle('on', mode==='algo');
+}
+function runSimulation() {
+  drawn = [];
+  const log = document.getElementById('simLog');
+  log.innerHTML = `[${new Date().toLocaleTimeString()}] Starting ${drawMode} draw simulation...\n`;
+  const allScores = [28,29,31,32,33,34,35,36,37,38,39,40];
+  const nums = new Set();
+  while(nums.size < 5) {
+    if(drawMode === 'algo') {
+      nums.add(allScores[Math.floor(Math.random()*allScores.length)]);
+    } else {
+      nums.add(Math.floor(Math.random()*45)+1);
+    }
+  }
+  drawn = [...nums];
+  drawn.forEach((n,i) => {
+    setTimeout(() => {
+      const el = document.getElementById('dn'+i);
+      el.textContent = n;
+      el.classList.add('drawn');
+      log.innerHTML += `[${new Date().toLocaleTimeString()}] Number ${i+1} drawn: ${n}\n`;
+      if(i===4) {
+        log.innerHTML += `[${new Date().toLocaleTimeString()}] Simulation complete. Numbers: ${drawn.join(', ')}\n`;
+        log.innerHTML += `[${new Date().toLocaleTimeString()}] ✅ Ready to publish or re-run\n`;
+        document.getElementById('publishBtn').disabled = false;
+        document.getElementById('publishBtn').style.opacity = '1';
+        simRan = true;
+      }
+    }, i * 600);
+  });
+}
+function resetDraw() {
+  drawn = []; simRan = false;
+  for(let i=0;i<5;i++){const el=document.getElementById('dn'+i);el.textContent='?';el.classList.remove('drawn');}
+  document.getElementById('simLog').innerHTML = '';
+  document.getElementById('publishBtn').disabled = true;
+  document.getElementById('publishBtn').style.opacity = '.4';
+}
+function publishDraw() {
+  if(!simRan) return;
+  showToast('🏆 Draw published! Winners notified via email');
+  document.getElementById('publishBtn').textContent = '✓ Published';
+  document.getElementById('publishBtn').disabled = true;
+}
+
+// ── ANALYTICS ──
+function renderAnalytics() {
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr'];
+  const subData = [180,210,290,320,380,184];
+  const charityData = [1800,2100,2900,3200,3800,4200];
+  const maxS = Math.max(...subData);
+  const maxC = Math.max(...charityData);
+  document.getElementById('subChart').innerHTML = subData.map((v,i)=>
+    `<div class="bar" style="height:${(v/maxS*100)}%" title="${v} signups"></div>`).join('');
+  document.getElementById('subLabels').innerHTML = months.map(m=>`<div class="chart-label">${m}</div>`).join('');
+  document.getElementById('charityChart').innerHTML = charityData.map((v,i)=>
+    `<div class="bar gold" style="height:${(v/maxC*100)}%" title="£${v}"></div>`).join('');
+  document.getElementById('charityLabels').innerHTML = months.map(m=>`<div class="chart-label">${m}</div>`).join('');
+  document.getElementById('topCharities').innerHTML = charities.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--muted);width:16px">${i+1}</div>
+      <div style="flex:1;font-size:.82rem;color:var(--white)">${c.name}</div>
+      <div style="font-size:.82rem;color:var(--gold);font-weight:500">${c.donated}</div>
+    </div>`).join('');
+  document.getElementById('matchHistory').innerHTML = [
+    {draw:'Mar 2026',match:'4-match',winners:3},
+    {draw:'Feb 2026',match:'3-match',winners:12},
+    {draw:'Jan 2026',match:'3-match',winners:8},
+    {draw:'Dec 2025',match:'No 5-match',winners:0},
+  ].map(d=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;font-size:.82rem">
+      <span style="color:var(--muted)">${d.draw}</span>
+      <span style="color:var(--white)">${d.match}</span>
+      <span style="color:var(--green-light)">${d.winners} winners</span>
+    </div>`).join('');
+}
+
+// ── MODALS / TOAST ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+renderUsers(users);
+renderCharities();
+renderWinners();
+renderRecentUsers();
+renderAnalytics();
+</script>
+</body>
+</html>
