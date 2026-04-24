@@ -1,169 +1,491 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Step 3</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        .hero-image {
-            flex: 1;
-            background-image: url('https://source.unsplash.com/random/?city,night');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-        
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 2rem;
-            color: white;
-        }
-        
-        .form-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-        
-        .login-form {
-            width: 100%;
-            max-width: 400px;
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background-color: #1d4ed8;
-        }
-        
-        .switch-form {
-            text-align: center;
-            margin-top: 1rem;
-        }
-        
-        .switch-form a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            
-            .hero-image {
-                min-height: 200px;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GreenHeart — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a4a2e;--green-mid:#2d7a4a;--green-light:#7dbf8e;
+  --gold:#c8a84b;--gold-light:#e8d08a;
+  --cream:#f0ebe0;--white:#f5f2ec;--black:#0d0d0d;
+  --muted:#6b6560;--border:rgba(26,74,46,0.12);
+  --error:#c0392b;--error-bg:rgba(192,57,43,0.07);
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream)}
+body{display:flex;min-height:100vh}
+
+/* LEFT PANEL */
+.left{
+  flex:1;background:var(--green);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:4rem 5vw;position:relative;overflow:hidden;
+}
+.left-deco{
+  position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(45,122,74,0.5),transparent 70%);
+  top:-150px;right:-150px;pointer-events:none;
+}
+.left-logo{
+  font-family:'Playfair Display',serif;font-size:1.5rem;color:#fff;
+  margin-bottom:3rem;
+}
+.left-logo span{color:var(--gold)}
+.left-h{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,3.5vw,3rem);color:#fff;
+  line-height:1.1;margin-bottom:1rem;
+}
+.left-h em{font-style:italic;color:var(--green-light);display:block}
+.left-sub{font-size:.95rem;color:rgba(255,255,255,0.5);line-height:1.7;max-width:360px;margin-bottom:2.5rem}
+.left-stats{display:flex;gap:2rem}
+.ls-item .ls-num{
+  font-family:'Playfair Display',serif;font-size:1.6rem;
+  color:#fff;font-weight:700;line-height:1;
+}
+.ls-item .ls-label{font-size:.75rem;color:rgba(255,255,255,0.4);margin-top:3px}
+
+/* RIGHT PANEL */
+.right{
+  width:480px;display:flex;flex-direction:column;
+  justify-content:center;padding:3rem 3.5rem;
+  background:var(--cream);
+}
+.form-header{margin-bottom:2rem}
+.form-tabs{display:flex;gap:0;margin-bottom:2rem;border-bottom:2px solid var(--border)}
+.tab-btn{
+  flex:1;padding:.7rem;background:none;border:none;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;
+  color:var(--muted);cursor:pointer;font-weight:400;
+  border-bottom:2px solid transparent;margin-bottom:-2px;
+  transition:color .2s,border-color .2s;
+}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green);font-weight:500}
+
+/* FORM */
+.form-panel{display:none}
+.form-panel.active{display:flex;flex-direction:column;gap:1.1rem}
+.form-group{display:flex;flex-direction:column;gap:.3rem}
+.form-label{font-size:.75rem;color:var(--muted);font-weight:500;letter-spacing:.03em}
+.form-input{
+  padding:.65rem .9rem;border-radius:.6rem;
+  border:1.5px solid var(--border);background:#fff;
+  font-size:.9rem;font-family:'DM Sans',sans-serif;color:var(--black);
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.form-input:focus{border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(26,74,46,0.08)}
+.form-input.error-input{border-color:var(--error)}
+
+/* PASSWORD WRAPPER */
+.pw-wrap{position:relative}
+.pw-wrap .form-input{padding-right:2.8rem;width:100%}
+.pw-toggle{
+  position:absolute;right:.8rem;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-size:.85rem;padding:4px;
+}
+
+/* ERROR / SUCCESS */
+.msg-box{
+  padding:.75rem 1rem;border-radius:.6rem;font-size:.82rem;
+  line-height:1.5;display:none;
+}
+.msg-box.error{background:var(--error-bg);color:var(--error);border:1px solid rgba(192,57,43,0.15)}
+.msg-box.success{background:rgba(26,74,46,0.07);color:var(--green);border:1px solid rgba(26,74,46,0.15)}
+
+/* SUBMIT BUTTON */
+.btn-submit{
+  background:var(--green);color:#fff;border:none;
+  border-radius:.7rem;padding:.8rem;
+  font-size:.95rem;font-family:'DM Sans',sans-serif;font-weight:500;
+  cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin-top:.3rem;
+}
+.btn-submit:hover{background:var(--green-mid);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,74,46,0.2)}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.spinner{
+  width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:.8rem;margin:.3rem 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-size:.75rem;color:var(--muted)}
+
+/* FORGOT */
+.forgot-link{
+  font-size:.78rem;color:var(--green-mid);text-align:right;
+  cursor:pointer;background:none;border:none;
+  font-family:'DM Sans',sans-serif;
+}
+.forgot-link:hover{text-decoration:underline}
+
+/* TERMS */
+.terms-note{font-size:.72rem;color:var(--muted);line-height:1.5;text-align:center;margin-top:.5rem}
+.terms-note a{color:var(--green-mid);text-decoration:none}
+.terms-note a:hover{text-decoration:underline}
+
+/* CHARITY SELECT */
+.charity-select-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
+}
+.charity-option{
+  border:1.5px solid var(--border);border-radius:.7rem;
+  padding:.7rem .8rem;cursor:pointer;transition:border-color .2s,background .2s;
+  display:flex;align-items:center;gap:.6rem;
+  background:#fff;
+}
+.charity-option:hover{border-color:var(--green-light)}
+.charity-option.selected{border-color:var(--green);background:rgba(26,74,46,0.04)}
+.charity-option .co-icon{font-size:1.1rem}
+.charity-option .co-name{font-size:.78rem;color:var(--black);font-weight:500;line-height:1.2}
+
+/* STRENGTH BAR */
+.strength-wrap{margin-top:.3rem}
+.strength-bars{display:flex;gap:3px}
+.strength-bar{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+.strength-label{font-size:.68rem;margin-top:.3rem}
+
+/* BACK LINK */
+.back-link{
+  font-size:.8rem;color:var(--muted);margin-bottom:1.5rem;
+  cursor:pointer;background:none;border:none;
+  font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:.3rem;
+}
+.back-link:hover{color:var(--green)}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .left{display:none}
+  .right{width:100%;padding:2.5rem 1.5rem}
+}
+</style>
 </head>
 <body>
-    <div class="hero-image">
-        <div class="overlay">
-            <h1>Welcome Back</h1>
-            <p>Sign in to access your dashboard and continue your journey with us.</p>
+
+<!-- LEFT PANEL -->
+<div class="left">
+  <div class="left-deco"></div>
+  <div class="left-logo"><span>Green</span>Heart</div>
+  <h1 class="left-h">Golf. Give.<em>Win every month.</em></h1>
+  <p class="left-sub">Join thousands of golfers who play for a purpose. Enter your scores, support a charity, and compete in our monthly prize draw.</p>
+  <div class="left-stats">
+    <div class="ls-item"><div class="ls-num">£8,400</div><div class="ls-label">April jackpot</div></div>
+    <div class="ls-item"><div class="ls-num">3,200+</div><div class="ls-label">active players</div></div>
+    <div class="ls-item"><div class="ls-num">48</div><div class="ls-label">charities</div></div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+
+  <!-- TABS -->
+  <div class="form-tabs">
+    <button class="tab-btn active" onclick="switchTab('login')">Sign in</button>
+    <button class="tab-btn" onclick="switchTab('signup')">Create account</button>
+  </div>
+
+  <!-- ── LOGIN FORM ── -->
+  <div class="form-panel active" id="loginForm">
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label class="form-label">Password</label>
+        <button class="forgot-link" onclick="switchTab('forgot')">Forgot password?</button>
+      </div>
+      <div class="pw-wrap">
+        <input type="password" class="form-input" id="loginPassword" placeholder="Your password" />
+        <button class="pw-toggle" onclick="togglePw('loginPassword',this)">👁</button>
+      </div>
+    </div>
+    <div class="msg-box" id="loginMsg"></div>
+    <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
+      <div class="spinner" id="loginSpinner"></div>
+      <span id="loginBtnText">Sign in to GreenHeart</span>
+    </button>
+    <div class="terms-note">
+      Don't have an account?
+      <a href="#" onclick="switchTab('signup')">Create one free →</a>
+    </div>
+  </div>
+
+  <!-- ── SIGNUP FORM ── -->
+  <div class="form-panel" id="signupForm">
+    <div class="form-group">
+      <label class="form-label">Full name</label>
+      <input type="text" class="form-input" id="signupName" placeholder="James Duncan" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="pw-wrap">
+        <input type="password" class="form-input" id="signupPassword" placeholder="Min. 8 characters" oninput="checkStrength(this.value)" />
+        <button class="pw-toggle" onclick="togglePw('signupPassword',this)">👁</button>
+      </div>
+      <div class="strength-wrap">
+        <div class="strength-bars">
+          <div class="strength-bar" id="sb1"></div>
+          <div class="strength-bar" id="sb2"></div>
+          <div class="strength-bar" id="sb3"></div>
+          <div class="strength-bar" id="sb4"></div>
         </div>
+        <div class="strength-label" id="strengthLabel" style="color:var(--muted)"></div>
+      </div>
     </div>
-    
-    <div class="form-container">
-        <form class="login-form" id="loginForm">
-            <h1>Login</h1>
-            
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="you@example.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
-            
-            <button type="submit">Sign In</button>
-            
-            <div class="switch-form">
-                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
-            </div>
-        </form>
+    <div class="form-group">
+      <label class="form-label">Choose your charity</label>
+      <div class="charity-select-row">
+        <div class="charity-option selected" onclick="selectCharity(this,'greenlinks-foundation')">
+          <span class="co-icon">🌱</span>
+          <span class="co-name">GreenLinks Foundation</span>
+        </div>
+        <div class="charity-option" onclick="selectCharity(this,'cancer-research-uk-golf')">
+          <span class="co-icon">🎗️</span>
+          <span class="co-name">Cancer Research UK</span>
+        </div>
+        <div class="charity-option" onclick="selectCharity(this,'junior-golf-trust')">
+          <span class="co-icon">👦</span>
+          <span class="co-name">Junior Golf Trust</span>
+        </div>
+        <div class="charity-option" onclick="selectCharity(this,'mind-and-sport-alliance')">
+          <span class="co-icon">🧠</span>
+          <span class="co-name">Mind & Sport</span>
+        </div>
+      </div>
     </div>
-    
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Basic validation
-            if (!email || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            // In a real app, you would send this to your backend
-            console.log('Login attempt:', { email, password });
-            
-        }     )
+    <div class="msg-box" id="signupMsg"></div>
+    <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
+      <div class="spinner" id="signupSpinner"></div>
+      <span id="signupBtnText">Create my account →</span>
+    </button>
+    <div class="terms-note">
+      By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      Minimum 10% of your subscription goes to your chosen charity.
+    </div>
+  </div>
+
+  <!-- ── FORGOT PASSWORD ── -->
+  <div class="form-panel" id="forgotForm">
+    <button class="back-link" onclick="switchTab('login')">← Back to sign in</button>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:.3rem">Reset your password</div>
+      <div style="font-size:.85rem;color:var(--muted)">Enter your email and we'll send a reset link.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="forgotEmail" placeholder="you@example.com" />
+    </div>
+    <div class="msg-box" id="forgotMsg"></div>
+    <button class="btn-submit" id="forgotBtn" onclick="handleForgot()">
+      <div class="spinner" id="forgotSpinner"></div>
+      <span id="forgotBtnText">Send reset link</span>
+    </button>
+  </div>
+
+</div><!-- /right -->
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  // ── PASTE YOUR KEYS HERE ──
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL'
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  // ── If already logged in, redirect to dashboard ──
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) window.location.href = '/dashboard.html'
+
+  let selectedCharity = 'greenlinks-foundation'
+
+  // ── TAB SWITCHER ──
+  window.switchTab = (tab) => {
+    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById(tab + 'Form').classList.add('active')
+    if (tab === 'login' || tab === 'signup') {
+      document.querySelectorAll('.tab-btn')[tab === 'login' ? 0 : 1].classList.add('active')
+    }
+    clearMsgs()
+  }
+
+  // ── CHARITY SELECT ──
+  window.selectCharity = (el, slug) => {
+    document.querySelectorAll('.charity-option').forEach(o => o.classList.remove('selected'))
+    el.classList.add('selected')
+    selectedCharity = slug
+  }
+
+  // ── PASSWORD VISIBILITY ──
+  window.togglePw = (id, btn) => {
+    const input = document.getElementById(id)
+    if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈' }
+    else { input.type = 'password'; btn.textContent = '👁' }
+  }
+
+  // ── PASSWORD STRENGTH ──
+  window.checkStrength = (val) => {
+    const bars = [document.getElementById('sb1'), document.getElementById('sb2'),
+                  document.getElementById('sb3'), document.getElementById('sb4')]
+    const label = document.getElementById('strengthLabel')
+    let score = 0
+    if (val.length >= 8)          score++
+    if (/[A-Z]/.test(val))        score++
+    if (/[0-9]/.test(val))        score++
+    if (/[^A-Za-z0-9]/.test(val)) score++
+    const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71']
+    const labels = ['Weak','Fair','Good','Strong']
+    bars.forEach((b, i) => {
+      b.style.background = i < score ? colors[score - 1] : 'var(--border)'
+    })
+    label.textContent = val.length > 0 ? labels[score - 1] || '' : ''
+    label.style.color = score > 0 ? colors[score - 1] : 'var(--muted)'
+  }
+
+  // ── SHOW MESSAGE ──
+  function showMsg(id, text, type = 'error') {
+    const el = document.getElementById(id)
+    el.textContent = text
+    el.className = 'msg-box ' + type
+    el.style.display = 'block'
+  }
+  function clearMsgs() {
+    document.querySelectorAll('.msg-box').forEach(m => m.style.display = 'none')
+  }
+
+  // ── LOADING STATE ──
+  function setLoading(btnId, spinnerId, textId, loading, text) {
+    const btn = document.getElementById(btnId)
+    btn.disabled = loading
+    document.getElementById(spinnerId).style.display = loading ? 'block' : 'none'
+    document.getElementById(textId).textContent = text
+  }
+
+  // ── LOGIN ──
+  window.handleLogin = async () => {
+    const email    = document.getElementById('loginEmail').value.trim()
+    const password = document.getElementById('loginPassword').value
+    if (!email || !password) { showMsg('loginMsg', '⚠️ Please fill in both fields'); return }
+
+    setLoading('loginBtn','loginSpinner','loginBtnText', true, 'Signing in...')
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      setLoading('loginBtn','loginSpinner','loginBtnText', false, 'Sign in to GreenHeart')
+      // Give user-friendly error messages
+      if (error.message.includes('Invalid login')) {
+        showMsg('loginMsg', '❌ Wrong email or password. Please try again.')
+      } else if (error.message.includes('Email not confirmed')) {
+        showMsg('loginMsg', '📧 Please check your email and confirm your account first.')
+      } else {
+        showMsg('loginMsg', '❌ ' + error.message)
+      }
+      return
+    }
+
+    // Check if admin
+    const role = data.user?.user_metadata?.role
+    if (role === 'admin') {
+      window.location.href = '/admin.html'
+    } else {
+      window.location.href = '/dashboard.html'
+    }
+  }
+
+  // ── SIGNUP ──
+  window.handleSignup = async () => {
+    const name     = document.getElementById('signupName').value.trim()
+    const email    = document.getElementById('signupEmail').value.trim()
+    const password = document.getElementById('signupPassword').value
+
+    if (!name || !email || !password) {
+      showMsg('signupMsg', '⚠️ Please fill in all fields'); return
+    }
+    if (password.length < 8) {
+      showMsg('signupMsg', '⚠️ Password must be at least 8 characters'); return
+    }
+
+    setLoading('signupBtn','signupSpinner','signupBtnText', true, 'Creating account...')
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+          charity: selectedCharity
+        }
+      }
+    })
+
+    if (error) {
+      setLoading('signupBtn','signupSpinner','signupBtnText', false, 'Create my account →')
+      if (error.message.includes('already registered')) {
+        showMsg('signupMsg', '❌ This email is already registered. Try signing in instead.')
+      } else {
+        showMsg('signupMsg', '❌ ' + error.message)
+      }
+      return
+    }
+
+    // Success — check if email confirmation is required
+    if (data.session) {
+      // Email confirmation OFF — go straight to dashboard
+      window.location.href = '/dashboard.html'
+    } else {
+      // Email confirmation ON — tell user to check email
+      setLoading('signupBtn','signupSpinner','signupBtnText', false, 'Create my account →')
+      showMsg('signupMsg',
+        '✅ Account created! Check your email and click the confirmation link, then come back to sign in.',
+        'success'
+      )
+    }
+  }
+
+  // ── FORGOT PASSWORD ──
+  window.handleForgot = async () => {
+    const email = document.getElementById('forgotEmail').value.trim()
+    if (!email) { showMsg('forgotMsg', '⚠️ Please enter your email'); return }
+
+    setLoading('forgotBtn','forgotSpinner','forgotBtnText', true, 'Sending...')
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://v0-greenheart.vercel.app/login.html'
+    })
+
+    setLoading('forgotBtn','forgotSpinner','forgotBtnText', false, 'Send reset link')
+
+    if (error) {
+      showMsg('forgotMsg', '❌ ' + error.message)
+    } else {
+      showMsg('forgotMsg',
+        '✅ Reset link sent! Check your inbox (and spam folder).',
+        'success'
+      )
+    }
+  }
+
+  // ── ENTER KEY support ──
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.handleLogin()
+  })
+  document.getElementById('signupPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.handleSignup()
+  })
+</script>
+</body>
+</html>
