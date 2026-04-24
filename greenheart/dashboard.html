@@ -323,7 +323,7 @@ body {
     </div>
     <div class="topbar-right" style="position:relative">
   <span class="topbar-date" id="topbar-date"></span>
-  <div class="topbar-notif" id="notifBtn" onclick="toggleNotif()" style="cursor:pointer">
+  <div class="topbar-notif" id="notifBtn" style="cursor:pointer">
     🔔<div class="notif-dot" id="notifDot"></div>
   </div>
 
@@ -687,7 +687,8 @@ function saveFromModal() {
 }
 
 // Close modal on overlay click
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
+document.getElementById('modalOverlay').addEventListener('click', function(e) 
+{
   if (e.target === this) closeModal()
 })
 
@@ -741,6 +742,16 @@ function toggleNotif() {
   if (!d) return
   d.style.display = d.style.display === 'block' ? 'none' : 'block'
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const notifBtn = document.getElementById('notifBtn');
+  if (notifBtn) {
+    notifBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleNotif();
+    });
+  }
+});
 
 function clearNotifs() {
   const dot  = document.getElementById('notifDot')
