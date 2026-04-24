@@ -144,6 +144,7 @@ body { font-family: 'DM Sans', sans-serif; background: #eae6dc; color: var(--bla
 .dhr-prize { font-size: 0.75rem; color: var(--muted); }
 
 /* CHARITY */
+
 .charity-selected { display: flex; align-items: center; gap: 1rem; background: var(--cream); border-radius: 0.8rem; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
 .cs-icon { width: 44px; height: 44px; border-radius: 0.7rem; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
 .cs-name { font-size: 0.9rem; font-weight: 500; color: var(--black); }
@@ -193,6 +194,22 @@ body { font-family: 'DM Sans', sans-serif; background: #eae6dc; color: var(--bla
 @media (max-width: 1100px) { .stat-row { grid-template-columns: 1fr 1fr; } .dash-grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main { margin-left: 0; } .topbar { padding: 0 1.2rem; } .content { padding: 1.2rem; } .hamburger-top { display: flex; } }
 @media (max-width: 480px) { .stat-row { grid-template-columns: 1fr 1fr; gap: 0.6rem; } .stat-card-val { font-size: 1.5rem; } }
+
+
+.don-amt-btn {
+  padding: .45rem 1rem;
+  border: 1.5px solid rgba(26,74,46,0.15);
+  background: #f0ebe0;
+  border-radius: 2rem;
+  font-size: .85rem;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  color: #1a4a2e;
+  font-weight: 500;
+  transition: background .2s, border-color .2s;
+}
+.don-amt-btn:hover { background: #1a4a2e; color: #fff; border-color: #1a4a2e; }
+.don-amt-btn.selected { background: #1a4a2e; color: #fff; border-color: #1a4a2e; }
 </style>
 </head>
 <body>
@@ -408,7 +425,7 @@ body { font-family: 'DM Sans', sans-serif; background: #eae6dc; color: var(--bla
               <span class="ctr-label">Going to charity this month</span>
               <span class="ctr-val" id="charityAmt">£0.89</span>
             </div>
-            <button class="btn-change-charity">+ Make a standalone donation</button>
+            <button class="btn-change-charity" onclick="showDonationForm()">+ Make a standalone donation</button>
           </div>
         </div>
 
@@ -430,11 +447,115 @@ body { font-family: 'DM Sans', sans-serif; background: #eae6dc; color: var(--bla
     </div>
   </div>
 </div>
+<!-- DONATION MODAL -->
+<div id="donationModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:1.2rem;padding:2rem;width:100%;max-width:400px;margin:1rem;">
+    <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:.3rem;">Make a donation</div>
+    <div style="font-size:.85rem;color:#6b6560;margin-bottom:1.5rem;">One-off donation to your chosen charity — independent of your subscription.</div>
 
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- QUICK AMOUNTS -->
+      <div>
+        <div style="font-size:.72rem;color:#6b6560;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Quick select</div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="don-amt-btn" onclick="setDonation(5)">£5</button>
+          <button class="don-amt-btn" onclick="setDonation(10)">£10</button>
+          <button class="don-amt-btn" onclick="setDonation(25)">£25</button>
+          <button class="don-amt-btn" onclick="setDonation(50)">£50</button>
+        </div>
+      </div>
+
+      <!-- CUSTOM AMOUNT -->
+      <div style="display:flex;flex-direction:column;gap:.3rem;">
+        <label style="font-size:.72rem;color:#6b6560;text-transform:uppercase;letter-spacing:.06em;">Or enter amount (£)</label>
+        <input type="number" id="donationAmt" placeholder="e.g. 15" min="1"
+          style="padding:.6rem .8rem;border:1.5px solid rgba(26,74,46,0.12);border-radius:.6rem;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;"
+          oninput="highlightCustom()" />
+      </div>
+
+      <!-- CHARITY SHOWN -->
+      <div style="background:#f0ebe0;border-radius:.75rem;padding:.8rem 1rem;display:flex;align-items:center;gap:.75rem;">
+        <div style="font-size:1.2rem;">🎗️</div>
+        <div>
+          <div style="font-size:.85rem;font-weight:500;color:#0d0d0d;">Cancer Research UK Golf</div>
+          <div style="font-size:.72rem;color:#6b6560;">100% of this donation goes to the charity</div>
+        </div>
+      </div>
+
+      <!-- MESSAGE -->
+      <div id="donationMsg" style="display:none;font-size:.8rem;padding:.6rem .9rem;border-radius:.6rem;"></div>
+
+      <!-- BUTTONS -->
+      <div style="display:flex;gap:.7rem;margin-top:.3rem;">
+        <button onclick="closeDonationForm()" style="flex:1;padding:.7rem;border:1px solid rgba(26,74,46,0.12);background:none;border-radius:.6rem;font-size:.88rem;font-family:'DM Sans',sans-serif;cursor:pointer;color:#6b6560;">Cancel</button>
+        <button onclick="submitDonation()" style="flex:2;padding:.7rem;background:#1a4a2e;color:#fff;border:none;border-radius:.6rem;font-size:.88rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;">Donate now →</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <!-- ══ ALL JAVASCRIPT — NO type=module ══ -->
 <script>
+// ── DONATION MODAL ──
+function showDonationForm() {
+  var modal = document.getElementById('donationModal')
+  modal.style.display = 'flex'
+  document.getElementById('donationAmt').value = ''
+  document.getElementById('donationMsg').style.display = 'none'
+  document.querySelectorAll('.don-amt-btn').forEach(function(b){
+    b.classList.remove('selected')
+  })
+}
+
+function closeDonationForm() {
+  document.getElementById('donationModal').style.display = 'none'
+}
+
+function setDonation(amt) {
+  document.getElementById('donationAmt').value = amt
+  document.querySelectorAll('.don-amt-btn').forEach(function(b){
+    b.classList.remove('selected')
+    if (b.textContent === '£' + amt) b.classList.add('selected')
+  })
+}
+
+function highlightCustom() {
+  document.querySelectorAll('.don-amt-btn').forEach(function(b){
+    b.classList.remove('selected')
+  })
+}
+
+function submitDonation() {
+  var amt = parseFloat(document.getElementById('donationAmt').value)
+  var msg = document.getElementById('donationMsg')
+
+  if (!amt || amt < 1) {
+    msg.textContent = '⚠️ Please enter a valid amount (minimum £1)'
+    msg.style.display = 'block'
+    msg.style.background = 'rgba(192,57,43,0.07)'
+    msg.style.color = '#c0392b'
+    return
+  }
+
+  // Show success — in real app this triggers Stripe
+  msg.textContent = '✅ Thank you! £' + amt.toFixed(2) + ' will be donated to Cancer Research UK Golf.'
+  msg.style.display = 'block'
+  msg.style.background = 'rgba(26,74,46,0.07)'
+  msg.style.color = '#1a4a2e'
+
+  setTimeout(function() {
+    closeDonationForm()
+    showToast('💚 Donation of £' + amt.toFixed(2) + ' submitted!')
+  }, 2000)
+}
+
+// Close modal when clicking outside
+document.getElementById('donationModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDonationForm()
+})
+
 
 // ── DATA ──
 var scores = [
