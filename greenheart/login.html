@@ -221,6 +221,7 @@ body{display:flex;min-height:100vh}
 
   <!-- ── SIGNUP FORM ── -->
   <div class="form-panel" id="signupForm">
+     
     <div class="form-group">
       <label class="form-label">Full name</label>
       <input type="text" class="form-input" id="signupName" placeholder="James Duncan" />
@@ -267,7 +268,7 @@ body{display:flex;min-height:100vh}
       </div>
     </div>
     <div class="msg-box" id="signupMsg"></div>
-    <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
+    <button type="button" class="btn-submit" id="signupBtn" onclick="handleSignup()">
       <div class="spinner" id="signupSpinner"></div>
       <span id="signupBtnText">Create my account →</span>
     </button>
@@ -301,8 +302,9 @@ body{display:flex;min-height:100vh}
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   // ── PASTE YOUR KEYS HERE ──
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL'
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'
+  const SUPABASE_URL = 'https://uyyoyfbbgaokqvtxsryh.supabase.co' 
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5eW95ZmJiZ2Fva3F2dHhzcnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjM2MzcsImV4cCI6MjA5MjQ5OTYzN30.1HHuIAMA2ePULIhUfuwElfSyN_hYNDIctY2Nq4lzjfU'
+
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
   // ── If already logged in, redirect to dashboard ──
@@ -486,6 +488,7 @@ body{display:flex;min-height:100vh}
   document.getElementById('signupPassword').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.handleSignup()
   })
+ 
 </script>
 </body>
 </html>
