@@ -21,10 +21,16 @@ export async function signIn(email, password) {
 }
 
 // LOG OUT
-export async function signOut() {
-  await supabase.auth.signOut()
-  window.location.href = '/login.html'
+export async function logout() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('Logout error:', error.message);
+  } else {
+    window.location.href = "index.html"; // or login page
+  }
 }
+
 
 // GET current logged-in user
 export async function getUser() {
